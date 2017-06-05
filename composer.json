@@ -1,0 +1,29 @@
+{
+    "name": "pragma-framework/search",
+    "description": "A simple Pragma module which can help to index and search text in Pragma Framework",
+    "license": "MIT",
+    "keywords": ["pragma", "framework", "search", "index"],
+    "authors": [
+        {"name": "Cyril Rouyer"}
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "pragma-framework/core": "dev-master",
+        "robmorgan/phinx": "^0.8.0",
+        "wamania/php-stemmer": "dev-master"
+    },
+     "autoload": {
+        "psr-0" : { "Pragma\\Search" : "." }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "Pragma\\Search\\Helpers\\Migrate::postInstallCmd"
+        ],
+        "post-update-cmd": [
+            "Pragma\\Search\\Helpers\\Migrate::postUpdateCmd"
+        ],
+        "pre-package-uninstall": [
+            "Pragma\\Search\\Helpers\\Migrate::preUninstall"
+        ]
+    }
+}
