@@ -14,16 +14,5 @@
     },
      "autoload": {
         "psr-0" : { "Pragma\\Search" : "." }
-    },
-    "scripts": {
-        "post-install-cmd": [
-            "Pragma\\Search\\Helpers\\Migrate::postInstallCmd"
-        ],
-        "post-update-cmd": [
-            "Pragma\\Search\\Helpers\\Migrate::postUpdateCmd"
-        ],
-        "pre-package-uninstall": [
-            "Pragma\\Search\\Helpers\\Migrate::preUninstall"
-        ]
     }
 }

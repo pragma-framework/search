@@ -8,17 +8,6 @@ In composer.json add:
 
 	require {"pragma-framework/search": "dev-master"}
 
-And in scripts blocks:
-
-	"scripts": {
-		"post-install-cmd": [
-			"Pragma\\Search\\Helpers\\Migrate::postInstallCmd"
-		],
-		"post-update-cmd": [
-			"Pragma\\Search\\Helpers\\Migrate::postUpdateCmd"
-		]
-	}
-
 ## Config
 
 Pragma\Search use a stemmer (wamania/php-stemmer) in order to extends the search to other words with the same root.
