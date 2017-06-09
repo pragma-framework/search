@@ -7,7 +7,12 @@ class Keyword extends Model{
 	const TABLE_NAME = 'keywords';
 
 	public function __construct(){
-		parent::__construct(self::TABLE_NAME);
+		parent::__construct(self::getTableName());
+	}
+
+	public static function getTableName(){
+		defined('DB_PREFIX') OR define('DB_PREFIX','pragma_');
+		return DB_PREFIX.self::TABLE_NAME;
 	}
 
 	public static function find_or_create($word, $lemme){

@@ -107,7 +107,7 @@ class Processor{
 			}
 		}
 		$db = DB::getDB();
-		$db->query('TRUNCATE '.PendingIndexCol::TABLE_NAME);
+		$db->query('TRUNCATE '.PendingIndexCol::getTableName());
 		static::clean_trailing_keywords();
 	}
 
@@ -164,28 +164,28 @@ class Processor{
 			$todelete[] = $c['context_id'];
 		}
 
-		$db->query('DELETE FROM '.Index::TABLE_NAME.'
+		$db->query('DELETE FROM '.Index::getTableName().'
 								WHERE indexable_type = ?
 								AND indexable_id = ?
 								AND col = ?', [$classname, $id, $col]);
 
 		if(!empty($todelete)){
 			$params = [];
-			$db->query('DELETE FROM '.Context::TABLE_NAME.' WHERE id IN ('.DB::getPDOParamsFor($todelete, $params).')', $params);
+			$db->query('DELETE FROM '.Context::getTableName().' WHERE id IN ('.DB::getPDOParamsFor($todelete, $params).')', $params);
 		};
 	}
 
 	private static function clean_all(){
 		$db = DB::getDB();
-		$db->query('TRUNCATE '.Keyword::TABLE_NAME);
-		$db->query('TRUNCATE '.Index::TABLE_NAME);
-		$db->query('TRUNCATE '.Context::TABLE_NAME);
+		$db->query('TRUNCATE '.Keyword::getTableName());
+		$db->query('TRUNCATE '.Index::getTableName());
+		$db->query('TRUNCATE '.Context::getTableName());
 	}
 
 	private static function clean_trailing_keywords(){
 		$db = DB::getDB();
-		$db->query('DELETE k FROM '.Keyword::TABLE_NAME.' k
-								LEFT JOIN '.Index::TABLE_NAME.' i ON k.id = i.keyword_id
+		$db->query('DELETE k FROM '.Keyword::getTableName().' k
+								LEFT JOIN '.Index::getTableName().' i ON k.id = i.keyword_id
 								WHERE i.id IS NULL');
 	}
 

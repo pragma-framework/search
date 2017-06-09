@@ -3,6 +3,8 @@
 use Phinx\Migration\AbstractMigration;
 use Phinx\Db\Adapter\MysqlAdapter;
 
+use Pragma\Search\PendingIndexCol;
+
 class AddPendingIndexTable extends AbstractMigration
 {
 		/**
@@ -29,7 +31,7 @@ class AddPendingIndexTable extends AbstractMigration
 		public function change(){
 			if(defined('ORM_ID_AS_UID') && ORM_ID_AS_UID){
 				$strategy = defined('ORM_UID_STRATEGY') && ORM_UID_STRATEGY == 'mysql' ? 'mysql' : 'php';
-				$t = $this->table('pending_indexs', ['id' => false, 'primary_key' => 'id']);
+				$t = $this->table(PendingIndexCol::getTableName(), ['id' => false, 'primary_key' => 'id']);
 				switch($strategy){
 					case 'mysql':
 						$t->addColumn('id', 'char', ['limit' => 36])
@@ -45,7 +47,7 @@ class AddPendingIndexTable extends AbstractMigration
 				}
 			}
 			else{
-				$t = $this->table('pending_indexs');
+				$t = $this->table(PendingIndexCol::getTableName());
 				$t->addColumn('historisable_type', 'char', ['limit' => 60])
 					->addColumn('indexable_type', 'char', ['limit' => 60])
 					->addColumn('indexable_id', 'integer');

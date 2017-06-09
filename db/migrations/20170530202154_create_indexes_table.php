@@ -2,6 +2,8 @@
 
 use Phinx\Migration\AbstractMigration;
 
+use Pragma\Search\Index;
+
 class CreateIndexesTable extends AbstractMigration
 {
 		/**
@@ -28,7 +30,7 @@ class CreateIndexesTable extends AbstractMigration
 		public function change(){
 			if(defined('ORM_ID_AS_UID') && ORM_ID_AS_UID){
 				$strategy = defined('ORM_UID_STRATEGY') && ORM_UID_STRATEGY == 'mysql' ? 'mysql' : 'php';
-				$t = $this->table('indexes', ['id' => false, 'primary_key' => 'id']);
+				$t = $this->table(Index::getTableName(), ['id' => false, 'primary_key' => 'id']);
 				switch($strategy){
 					case 'mysql':
 						$t->addColumn('id', 'char', ['limit' => 36])
@@ -48,7 +50,7 @@ class CreateIndexesTable extends AbstractMigration
 				}
 			}
 			else{
-				$t = $this->table('indexes');
+				$t = $this->table(Index::getTableName());
 				$t->addColumn('keyword_id', 'integer')
 					->addColumn('context_id', 'integer')
 					->addColumn('indexable_type', 'char', ['limit' => 60])
