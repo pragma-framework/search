@@ -117,7 +117,9 @@ class Search{
 							}
 						}
 
-						$ranked[$data['indexable_type'] . '-' . $data['indexable_id']]['obj']['contexts'][$data['context_id']] = $data['context_id'];
+						if($with_context){
+							$ranked[$data['indexable_type'] . '-' . $data['indexable_id']]['obj']['contexts'][$data['context_id']] = $data['context_id'];
+						}
 						$ranked[$data['indexable_type'] . '-' . $data['indexable_id']]['count']++;
 					}
 
