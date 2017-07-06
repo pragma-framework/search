@@ -29,7 +29,7 @@ class Search{
 																 $cols = null){
 		$query = trim($query);
 		if(empty($query)){
-			return $results;
+			return [];
 		}
 
 		$words = Processor::parse($query);
