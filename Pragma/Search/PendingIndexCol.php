@@ -28,7 +28,7 @@ class PendingIndexCol extends Model{
 			'indexable_id' 		=> $obj->id,
 			'col' 						=> $col,
 			'infile'					=> $infile,
-			'value'						=> $infile ? null : $obj->$col
+			'value'						=> $obj->$col
 			])->save();
 
 

@@ -122,8 +122,8 @@ class Processor{
 				$parsing = static::get_context($text);
 			}
 			else{//especially useful for the documents
-				if(file_exists(ROOT_PATH . '/data/texts/'.$id.'.txt')){
-					$parsing = static::get_context(file_get_contents(ROOT_PATH . '/data/texts/'.$id.'.txt'));
+				if(file_exists($text)){
+					$parsing = static::get_context(file_get_contents($text));
 				}
 			}
 
