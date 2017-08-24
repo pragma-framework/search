@@ -129,18 +129,20 @@ class Processor{
 
 			if(!empty($parsing)){
 				foreach($parsing as $p){
-					$context = Context::build(['context' => $p['line']])->save();
-					foreach($p['words'] as $w){
-						if(isset(static::$keywords[$w])){
-							$kw = Keyword::build(static::$keywords[$w]);//no save
+					if(!empty($parsing['words'])){
+						$context = Context::build(['context' => $p['line']])->save();
+						foreach($p['words'] as $w){
+							if(isset(static::$keywords[$w])){
+								$kw = Keyword::build(static::$keywords[$w]);//no save
+							}
+							else{
+								$kw = Keyword::create($w, static::getStemmer()->stem($w));
+								static::$keywords[$w] = $kw->as_array();
+							}
+							$kw->store($context, $classname, $id, $col);
+							$kw = null;
+							unset($kw);
 						}
-						else{
-							$kw = Keyword::create($w, static::getStemmer()->stem($w));
-							static::$keywords[$w] = $kw->as_array();
-						}
-						$kw->store($context, $classname, $id, $col);
-						$kw = null;
-						unset($kw);
 					}
 				}
 			}
