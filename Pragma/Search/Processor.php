@@ -21,7 +21,6 @@ class Processor{
 
 	public static function parse($line){
 		$words = preg_split('/([\s!=\+:;\*\/\?,\'&\(\)_¶§\|%\p{So}<>]+)|\.(?!\w)|( -)|(- )/mui', trim($line), null, PREG_SPLIT_NO_EMPTY);
-
 		if(!empty($words)){
 			//preprocessing des mots trouvés
 			$cleaned = [];
@@ -121,7 +120,7 @@ class Processor{
 			if( ! $infile ){
 				$parsing = static::get_context($text);
 			}
-			else{//especially useful for the documents
+			elseif( ! empty($text) ){//especially useful for the documents
 				if(file_exists($text)){
 					$parsing = static::get_context(file_get_contents($text));
 				}
@@ -129,7 +128,7 @@ class Processor{
 
 			if(!empty($parsing)){
 				foreach($parsing as $p){
-					if(!empty($parsing['words'])){
+					if(!empty($p['words'])){
 						$context = Context::build(['context' => $p['line']])->save();
 						foreach($p['words'] as $w){
 							if(isset(static::$keywords[$w])){
