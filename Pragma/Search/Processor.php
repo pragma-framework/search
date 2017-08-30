@@ -21,9 +21,9 @@ class Processor{
 
 	public static function parse($line){
 		$words = preg_split('/([\s!=\+:;\*\/\?,\'&\(\)_¶§\|%\p{So}<>]+)|\.(?!\w)|( -)|(- )/mui', trim($line), null, PREG_SPLIT_NO_EMPTY);
+		$cleaned = [];
 		if(!empty($words)){
 			//preprocessing des mots trouvés
-			$cleaned = [];
 			array_walk($words, function($w, $key) use(&$cleaned){
 				$w = mb_strtolower($w);
 
@@ -39,8 +39,8 @@ class Processor{
 			});
 
 			$words = null;
-			return $cleaned;
 		}
+		return $cleaned;
 	}
 
 	public static function getStemmer(){
