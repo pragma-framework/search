@@ -147,7 +147,7 @@ class Search{
 				}
 
 				/*
-				On ne retourne que les résultats qui sont concernés par les $threshold (2/3 par défaut) des keywords
+				We only return the results that are affected by the $threshold (2/3 by default) of the keywords
 				 */
 				$matchingKeywords = count($keywords)*$threshold;
 				foreach($counts as $it => $itv){
