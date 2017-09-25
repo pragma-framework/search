@@ -26,7 +26,8 @@ class Search{
 																 $with_context = false,
 																 $precision = self::START_PRECISION,
 																 $types = null,
-																 $cols = null){
+																 $cols = null,
+																 $threshold = 2/3){
 		$query = trim($query);
 		if(empty($query)){
 			return [];
@@ -100,7 +101,12 @@ class Search{
 			$indexes = $query->get_arrays();
 
 			if( ! empty($indexes) ){
+				$counts = [];
 				foreach($indexes as $data){
+					if(!isset($counts[$data['indexable_type']][$data['indexable_id']][$data['keyword_id']])){
+						$counts[$data['indexable_type']][$data['indexable_id']][$data['keyword_id']] = 1;
+					}
+
 					if( $with_context ){
 						$context_ids[$data['context_id']] = $data['context_id'];
 					}
@@ -108,9 +114,13 @@ class Search{
 					if($results_type == self::RANKED_RESULTS || $results_type == self::FULL_RESULTS){
 						if( ! isset($ranked[$data['indexable_type'] . '-' . $data['indexable_id']]) ){
 							$ranked[$data['indexable_type'] . '-' . $data['indexable_id']] = [
-							'obj' => ['type' => $data['indexable_type'],
-							'id' => $data['indexable_id'],
-							'keyword' => $keywords[$data['keyword_id']]], 'count' => 0];
+								'obj' => [
+									'type' => $data['indexable_type'],
+									'id' => $data['indexable_id'],
+									'keyword' => $keywords[$data['keyword_id']]
+								],
+								'count' => 0,
+							];
 
 							if($with_context){
 								$ranked[$data['indexable_type'] . '-' . $data['indexable_id']]['obj']['contexts'] = [];
@@ -135,6 +145,24 @@ class Search{
 						$objects[$data['indexable_type']][$data['indexable_id']][] = $from;
 					}
 				}
+
+				/*
+				On ne retourne que les résultats qui sont concernés par les $threshold (2/3 par défaut) des keywords
+				 */
+				$matchingKeywords = count($keywords)*$threshold;
+				foreach($counts as $it => $itv){
+					foreach($itv as $ii => $c){
+						if(count($c) < $matchingKeywords){
+							if($results_type == self::RANKED_RESULTS || $results_type == self::FULL_RESULTS){
+								unset($ranked[$it."-".$ii]);
+							}
+							if($results_type == self::OBJECTS_RESULTS || $results_type == self::FULL_RESULTS){
+								unset($objects[$it][$ii]);
+							}
+						}
+					}
+				}
+				unset($counts);
 
 				if($results_type == self::RANKED_RESULTS || $results_type == self::FULL_RESULTS){
 					$ranked = array_values($ranked);
