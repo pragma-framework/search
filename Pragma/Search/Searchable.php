@@ -11,6 +11,7 @@ trait Searchable{
 		$this->pushHook('before_save', 'init_index_was_new');
 		$this->pushHook('after_save', 'index_prepare');
 		$this->pushHook('after_open', 'index_init_values');
+		$this->pushHook('before_delete', 'index_delete');
 
 		return $this;
 	}
@@ -61,5 +62,16 @@ trait Searchable{
 
 	public function get_indexed_cols(){
 		return [$this->indexed_cols, $this->infile_cols];
+	}
+
+	protected function index_delete(){
+		PendingIndexCol::build([
+			'indexable_type' 	=> get_class(),
+			'indexable_id' 		=> $this->id,
+			'col' 				=> 'id',
+			'value'				=> $this->id,
+			'deleted' 			=> true,
+		])->save();
+		return true;
 	}
 }
