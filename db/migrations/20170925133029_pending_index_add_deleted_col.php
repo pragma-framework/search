@@ -2,8 +2,6 @@
 
 use Phinx\Migration\AbstractMigration;
 
-use Pragma\Search\PendingIndexCol;
-
 class PendingIndexAddDeletedCol extends AbstractMigration
 {
     /**
@@ -29,7 +27,7 @@ class PendingIndexAddDeletedCol extends AbstractMigration
      */
     public function change()
     {
-        $this->table(PendingIndexCol::getTableName())
+        $this->table('pending_indexs')
             ->addColumn('deleted', 'boolean', ['default' => false])
             ->update();
     }

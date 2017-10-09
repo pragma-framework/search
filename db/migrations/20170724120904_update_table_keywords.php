@@ -2,8 +2,6 @@
 
 use Phinx\Migration\AbstractMigration;
 
-use Pragma\Search\Keyword;
-
 class UpdateTableKeywords extends AbstractMigration
 {
     /**
@@ -29,12 +27,12 @@ class UpdateTableKeywords extends AbstractMigration
      */
     public function up()
     {
-        $t = $this->table(Keyword::getTableName());
+        $t = $this->table('keywords');
         $t->changeColumn('word', 'char', ['limit' => 64, 'collation' => 'utf8_bin'])->update();
     }
     public function donw()
     {
-        $t = $this->table(Keyword::getTableName());
+        $t = $this->table('keywords');
         $t->changeColumn('word', 'char', ['limit' => 64, 'collation' => 'utf8_general_ci'])->update();
     }
 }
