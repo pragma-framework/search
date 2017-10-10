@@ -2,8 +2,6 @@
 
 use Phinx\Migration\AbstractMigration;
 
-use Pragma\Search\Keyword;
-
 class CreateIndexKeywordsTable extends AbstractMigration
 {
 		/**
@@ -30,7 +28,7 @@ class CreateIndexKeywordsTable extends AbstractMigration
 		public function change(){
 			if(defined('ORM_ID_AS_UID') && ORM_ID_AS_UID){
 				$strategy = defined('ORM_UID_STRATEGY') && ORM_UID_STRATEGY == 'mysql' ? 'mysql' : 'php';
-				$t = $this->table(Keyword::getTableName(), ['id' => false, 'primary_key' => 'id']);
+				$t = $this->table('keywords', ['id' => false, 'primary_key' => 'id']);
 				switch($strategy){
 					case 'mysql':
 						$t->addColumn('id', 'char', ['limit' => 36]);
@@ -42,7 +40,7 @@ class CreateIndexKeywordsTable extends AbstractMigration
 				}
 			}
 			else{
-				$t = $this->table(Keyword::getTableName());
+				$t = $this->table('keywords');
 			}
 
 			$t->addColumn('word', 'char', ['limit' => 64])

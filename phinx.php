@@ -14,6 +14,7 @@ return array(
             'pass' => DB_PASSWORD,
             'charset' => 'utf8',
             'collation' => 'utf8_general_ci',
+            'table_prefix' => defined('DB_PREFIX') ? DB_PREFIX : 'pragma_',
         ),
     ),
 );

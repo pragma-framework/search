@@ -3,8 +3,6 @@
 use Phinx\Migration\AbstractMigration;
 use Phinx\Db\Adapter\MysqlAdapter;
 
-use Pragma\Search\Context;
-
 class CreateContextsTable extends AbstractMigration
 {
 	/**
@@ -31,7 +29,7 @@ class CreateContextsTable extends AbstractMigration
 	public function change(){
 		if(defined('ORM_ID_AS_UID') && ORM_ID_AS_UID){
 			$strategy = defined('ORM_UID_STRATEGY') && ORM_UID_STRATEGY == 'mysql' ? 'mysql' : 'php';
-			$t = $this->table(Context::getTableName(), ['id' => false, 'primary_key' => 'id']);
+			$t = $this->table('contexts', ['id' => false, 'primary_key' => 'id']);
 			switch($strategy){
 				case 'mysql':
 					$t->addColumn('id', 'char', ['limit' => 36]);
@@ -43,7 +41,7 @@ class CreateContextsTable extends AbstractMigration
 			}
 		}
 		else{
-			$t = $this->table(Context::getTableName());
+			$t = $this->table('contexts');
 		}
 
 		$t->addColumn('context', 'text', ['limit' => MysqlAdapter::TEXT_LONG])
