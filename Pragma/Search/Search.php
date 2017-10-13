@@ -149,7 +149,7 @@ class Search{
 				/*
 				We only return the results that are affected by the $threshold (2/3 by default) of the keywords
 				 */
-				$matchingKeywords = count($keywords)*$threshold;
+				$matchingKeywords = count($words)*$threshold;
 				foreach($counts as $it => $itv){
 					foreach($itv as $ii => $c){
 						if(count($c) < $matchingKeywords){
