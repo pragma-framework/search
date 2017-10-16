@@ -149,10 +149,10 @@ class Search{
 				/*
 				We only return the results that are affected by the $threshold (2/3 by default) of the keywords
 				 */
-				$matchingKeywords = count($words)*$threshold;
+				$matchingWords = count($words)*$threshold;
 				foreach($counts as $it => $itv){
 					foreach($itv as $ii => $c){
-						if(count($c) < $matchingKeywords){
+						if(count($c) < $matchingWords){
 							if($results_type == self::RANKED_RESULTS || $results_type == self::FULL_RESULTS){
 								unset($ranked[$it."-".$ii]);
 							}
