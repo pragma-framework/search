@@ -43,8 +43,6 @@ class Search{
 			$words = $lemmes;
 		}
 
-		$keywords = [];
-
 		foreach($words as $w){
 			$against = "";
 			switch($precision){
@@ -63,11 +61,10 @@ class Search{
 					break;
 			}
 
-			$keywords = array_merge($keywords, Keyword::forge()
+			$keywords = Keyword::forge()
 									->select(['id', 'word'])
 									->where($extend_to_lemmes ? 'lemme' : 'word', 'LIKE', $against)
-									->get_arrays('id')
-								);
+									->get_arrays('id');
 		}
 
 		$objects = $ranked = $contexts = [];
