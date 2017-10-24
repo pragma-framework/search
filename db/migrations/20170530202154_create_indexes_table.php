@@ -27,7 +27,7 @@ class CreateIndexesTable extends AbstractMigration
 		 */
 		public function change(){
 			if(defined('ORM_ID_AS_UID') && ORM_ID_AS_UID){
-				$strategy = ! defined('ORM_UID_STRATEGY') ? 'php' : && ORM_UID_STRATEGY;
+				$strategy = ! defined('ORM_UID_STRATEGY') ? 'php' : ORM_UID_STRATEGY;
 				$t = $this->table('indexes', ['id' => false, 'primary_key' => 'id']);
 				switch($strategy){
 					case 'mysql':
