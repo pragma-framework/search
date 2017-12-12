@@ -43,6 +43,7 @@ class Search{
 			$words = $lemmes;
 		}
 
+		$keywords = [];
 		foreach($words as $w){
 			$against = "";
 			switch($precision){
@@ -61,7 +62,7 @@ class Search{
 					break;
 			}
 
-			$keywords = Keyword::forge()
+			$keywords += Keyword::forge()
 									->select(['id', 'word'])
 									->where($extend_to_lemmes ? 'lemme' : 'word', 'LIKE', $against)
 									->get_arrays('id');
