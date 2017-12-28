@@ -31,7 +31,9 @@ class Processor{
 					return false;
 				}
 				if(\strpos($w, '-') !== false){
-					$cleaned = array_merge($cleaned, explode('-', $w));
+					$cleaned = array_merge($cleaned, array_filter(explode('-', $w), function($val){
+							return \mb_strlen($val) >= static::MIN_WORD_LENGTH;
+					}));
 				}
 
 				$cleaned[$w] = $w;
