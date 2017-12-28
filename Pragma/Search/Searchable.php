@@ -83,6 +83,9 @@ trait Searchable{
 	}
 
 	protected function index_delete(){
+		\Pragma\DB\DB::getDB()->query('DELETE FROM '.PendingIndexCol::getTableName().'
+			WHERE indexable_type = ? AND indexable_id = ?', [get_class(), $this->id]);
+
 		PendingIndexCol::build([
 			'indexable_type' 	=> get_class(),
 			'indexable_id' 		=> $this->id,
@@ -90,6 +93,7 @@ trait Searchable{
 			'value'				=> $this->id,
 			'deleted' 			=> true,
 		])->save();
+
 		return true;
 	}
 }
