@@ -133,7 +133,7 @@ class Processor{
 			}
 
 			if(!empty($parsing)){
-				if(is_null(static::$keywords) && $immediatly){
+				if($immediatly){
 					static::init_keywords(true, $parsing);
 				}
 				foreach($parsing as $p){
