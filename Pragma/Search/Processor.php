@@ -4,7 +4,8 @@ namespace Pragma\Search;
 use Pragma\DB\DB;
 
 class Processor{
-	const MIN_WORD_LENGTH = 3;
+	const DEFAULT_MIN_WORD_LENGTH = 3;
+	public static $threshold = null;
 	public static $stemmer = null;
 	public static $keywords = null;
 
@@ -13,26 +14,41 @@ class Processor{
 		$context = [];
 		if(!empty($lines)){
 			array_walk($lines, function($line, $k) use (&$context){
-				$context[] = ['line' => $line, 'words' => static::parse($line, $context)];
+				$context[] = ['line' => $line, 'words' => static::parse($line)];
 			});
 		}
 		return $context;
 	}
 
-	public static function parse($line){
+	public static function parse($line, $user_threshold = null){
+		if(is_null(static::$threshold) || static::$threshold != $user_threshold){
+			$min = defined('PRAGMA_SEARCH_MIN_WORD_LENGTH') ? PRAGMA_SEARCH_MIN_WORD_LENGTH : static::DEFAULT_MIN_WORD_LENGTH;
+
+			if(is_null($user_threshold)){
+				static::$threshold = $min;
+			}
+			else{
+				if($user_threshold < $min){
+					trigger_error("The min_word_length size is lesser than the one chosen for the indexation. You may want to redefine PRAGMA_SEARCH_MIN_WORD_LENGTH and rebuild your whole index in order to use this value");
+
+				}
+				static::$threshold = max($user_threshold, $min);
+			}
+		}
+
 		$words = preg_split('/([\s!=\+:;\*\/\?,\'’`"&\(\)_¶§\|%\p{So}<>]+)|\.(?!\w)|( -)|(- )/mui', trim($line), null, PREG_SPLIT_NO_EMPTY);
 		$cleaned = [];
 		if(!empty($words)){
-			//preprocessing des mots trouvés
+			//preprocessing of the words founded
 			array_walk($words, function($w, $key) use(&$cleaned){
 				$w = mb_strtolower($w);
 
-				if(\mb_strlen($w) < static::MIN_WORD_LENGTH){
+				if(\mb_strlen($w) < static::$threshold){
 					return false;
 				}
 				if(\strpos($w, '-') !== false){
-					$cleaned = array_merge($cleaned, array_filter(explode('-', $w), function($val){
-							return \mb_strlen($val) >= static::MIN_WORD_LENGTH;
+					$cleaned = array_merge($cleaned, array_filter(explode('-', $w), function($val) {
+							return \mb_strlen($val) >= static::$threshold;
 					}));
 				}
 

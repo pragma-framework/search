@@ -19,6 +19,8 @@ class Search{
 	* $precision : determines the keyword search whether should be a LIKE 'word%', '%word' OR '%word%' OR 'word'
 	* $types : filter on indexable_type. given as an array
 	* $cols : filter on col. given as an array
+	* $threshold : minimum ratio of the number of words found inside the expression of the user
+	* $min_word_length : allow the developper to handle only words with a length greater (>=) than the one he choose
 	*/
 	public static function process($query,
 																 $results_type = self::RANKED_RESULTS,
@@ -27,13 +29,14 @@ class Search{
 																 $precision = self::START_PRECISION,
 																 $types = null,
 																 $cols = null,
-																 $threshold = 2/3){
+																 $threshold = 2/3,
+																 $min_word_length = null){
 		$query = trim($query);
 		if(empty($query)){
 			return [];
 		}
 
-		$words = Processor::parse($query);
+		$words = Processor::parse($query, $min_word_length);
 		if($extend_to_lemmes && $precision != self::EXACT_PRECISION){
 			$lemmes = [];
 			foreach($words as $w){
