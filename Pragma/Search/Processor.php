@@ -20,7 +20,7 @@ class Processor{
 	}
 
 	public static function parse($line){
-		$words = preg_split('/([\s!=\+:;\*\/\?,\'&\(\)_¶§\|%\p{So}<>]+)|\.(?!\w)|( -)|(- )/mui', trim($line), null, PREG_SPLIT_NO_EMPTY);
+		$words = preg_split('/([\s!=\+:;\*\/\?,\'’`"&\(\)_¶§\|%\p{So}<>]+)|\.(?!\w)|( -)|(- )/mui', trim($line), null, PREG_SPLIT_NO_EMPTY);
 		$cleaned = [];
 		if(!empty($words)){
 			//preprocessing des mots trouvés
