@@ -1,15 +1,18 @@
 <?php
 namespace Pragma\Search;
 
+use Pragma\Search\Processor;
+
 trait Searchable{
 	protected $indexed_cols = [];
 	protected $infile_cols = [];
 	protected $index_was_new = true;
+	protected $immediatly_indexed = false;
 
 	protected function index_cols(){
 		$this->indexed_cols = array_flip(func_get_args());
 		$this->pushHook('before_save', 'init_index_was_new');
-		$this->pushHook('after_save', 'index_prepare');
+		$this->pushHook('after_save', 'handle_index');
 		$this->pushHook('after_open', 'index_init_values');
 		$this->pushHook('before_delete', 'index_delete');
 
@@ -20,6 +23,11 @@ trait Searchable{
 	//du coup peut-être prévoir un warning si ça n'a pas été fait avant
 	protected function infile_cols(){
 		$this->infile_cols = array_flip(func_get_args());
+		return $this;
+	}
+
+	protected function set_immediatly_indexed($val = true){
+		$this->immediatly_indexed = $val;
 		return $this;
 	}
 
@@ -34,12 +42,24 @@ trait Searchable{
 		$this->index_was_new = $this->is_new();
 	}
 
-	protected function index_prepare($last = false){
+	protected function handle_index($last = false){
 		if( empty($this->indexed_cols) ){
 			$this->index_init_values($last);
 			return false;
 		}
 
+		if($this->immediatly_indexed){
+			Processor::index_object($this, true);
+		}
+		else{
+			$this->index_prepare($last);
+		}
+
+		$this->index_init_values($last);
+		return true;
+	}
+
+	protected function index_prepare($last = false){
 		if( $this->index_was_new ){
 			foreach($this->indexed_cols as $col => $value){
 				PendingIndexCol::store($this, $col, isset($this->infile_cols[$col]));
@@ -55,8 +75,6 @@ trait Searchable{
 				}
 			}
 		}
-
-		$this->index_init_values($last);
 		return true;
 	}
 
