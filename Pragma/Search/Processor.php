@@ -51,8 +51,8 @@ class Processor{
 		return static::$stemmer;
 	}
 
-	public static function index_object($obj, $clean = false){
-		if(is_null(static::$keywords)){
+	public static function index_object($obj, $clean = false, $immediatly = false){
+		if(is_null(static::$keywords) && ! $immediatly){
 			static::init_keywords();//in case we just want to index an object without rebuild the whole index
 		}
 
@@ -64,7 +64,7 @@ class Processor{
 			}
 
 			foreach($cols as $col => $idx){
-				static::index_col(get_class($obj), $obj->id, $col, $obj->$col, isset($infile[$col]), $clean);
+				static::index_col(get_class($obj), $obj->id, $col, $obj->$col, isset($infile[$col]), $clean, $immediatly);
 			}
 		}
 		else{
@@ -116,7 +116,7 @@ class Processor{
 		static::clean_trailing_keywords();
 	}
 
-	private static function index_col($classname, $id, $col, $text = null, $infile = false, $clean = false){
+	private static function index_col($classname, $id, $col, $text = null, $infile = false, $clean = false, $immediatly = false){
 		if($clean){
 			static::clean_col_index($classname, $id, $col);
 		}
@@ -133,6 +133,9 @@ class Processor{
 			}
 
 			if(!empty($parsing)){
+				if(is_null(static::$keywords) && $immediatly){
+					static::init_keywords(true, $parsing);
+				}
 				foreach($parsing as $p){
 					if(!empty($p['words'])){
 						$context = Context::build(['context' => $p['line']])->save();
@@ -154,8 +157,24 @@ class Processor{
 		}
 	}
 
-	private static function init_keywords(){
-		static::$keywords = Keyword::forge()->get_arrays('word');
+	private static function init_keywords($short_listed = false, $list = []){
+		if( ! $short_listed ){
+			static::$keywords = Keyword::forge()->get_arrays('word');
+		}
+		else{//we want to restrict the memory usage (especially in an immediat indexation)
+			$words = [];
+			if( ! empty($list) ){
+				array_walk($list, function($val, $key) use (&$words) {
+					$words += $val['words'];
+				});
+
+				static::$keywords = Keyword::forge()
+					->where('word', 'in', $words)->get_arrays('word', false, true, true);
+			}
+			else{
+				static::$keywords = [];
+			}
+		}
 	}
 
 	private static function clean_col_index($classname, $id, $col){

@@ -49,7 +49,7 @@ trait Searchable{
 		}
 
 		if($this->immediatly_indexed){
-			Processor::index_object($this, true);
+			Processor::index_object($this, true, true);
 		}
 		else{
 			$this->index_prepare($last);
