@@ -26,7 +26,7 @@ trait Searchable{
 		return $this;
 	}
 
-	protected function set_immediatly_indexed($val = true){
+	public function set_immediatly_indexed($val = true){
 		$this->immediatly_indexed = $val;
 		return $this;
 	}
