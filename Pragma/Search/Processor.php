@@ -169,7 +169,7 @@ class Processor{
 				});
 
 				static::$keywords = Keyword::forge()
-					->where('word', 'in', $words)->get_arrays('word', false, true, true);
+					->where('word', 'in', $words)->get_arrays('word');
 			}
 			else{
 				static::$keywords = [];
