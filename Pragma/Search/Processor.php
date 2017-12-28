@@ -165,7 +165,7 @@ class Processor{
 			$words = [];
 			if( ! empty($list) ){
 				array_walk($list, function($val, $key) use (&$words) {
-					$words += $val['words'];
+					$words += isset($val['words']) ? $val['words'] : [];
 				});
 
 				static::$keywords = Keyword::forge()
