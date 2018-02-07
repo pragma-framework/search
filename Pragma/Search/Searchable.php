@@ -62,12 +62,14 @@ trait Searchable{
 	protected function index_prepare($last = false){
 		if( $this->index_was_new ){
 			foreach($this->indexed_cols as $col => $value){
-				PendingIndexCol::store($this, $col, isset($this->infile_cols[$col]));
+				if(!empty($this->$col)){
+					PendingIndexCol::store($this, $col, isset($this->infile_cols[$col]));
+				}
 			}
 		}
 		else{
 			foreach($this->initial_values as $col => $value){
-				if(	isset($this->indexed_cols[$col]) &&
+				if( !empty($this->$col) && isset($this->indexed_cols[$col]) &&
 						array_key_exists($col, $this->initial_values) &&
 						$value != $this->$col
 					){
