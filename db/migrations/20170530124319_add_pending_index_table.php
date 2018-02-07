@@ -47,7 +47,7 @@ class AddPendingIndexTable extends AbstractMigration
 			}
 			else{
 				$t = $this->table('pending_indexs');
-					->addColumn('indexable_type', 'char', ['limit' => 60])
+				$t->addColumn('indexable_type', 'char', ['limit' => 60])
 					->addColumn('indexable_id', 'integer');
 			}
 
