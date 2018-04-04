@@ -24,10 +24,18 @@ class Keyword extends Model{
 	}
 
 	public static function create($word, $lemme){
-		return static::build([
-			'word' 	=> $word,
-			'lemme' => $lemme
-			])->save();
+		try {
+			return static::build([
+				'word' 	=> $word,
+				'lemme' => $lemme
+				])->save();
+		}
+		catch(\Pragma\Exceptions\DBException $e) {
+			return null;
+		}
+		catch(\Exception $e1) {
+			return null;
+		}
 	}
 
 	public function store(Context $context, $classname, $id, $col){
