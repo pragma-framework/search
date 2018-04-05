@@ -162,12 +162,18 @@ class Processor{
 								$kw = Keyword::build(static::$keywords[$w]);//no save
 							}
 							else{
+								//create can return a null object if the word is duplicated because of too many characters
 								$kw = Keyword::create($w, static::getStemmer()->stem($w));
-								static::$keywords[$w] = $kw->as_array();
+								if($kw) {
+									static::$keywords[$w] = $kw->as_array();
+								}
 							}
-							$kw->store($context, $classname, $id, $col);
-							$kw = null;
-							unset($kw);
+
+							if($kw) {
+								$kw->store($context, $classname, $id, $col);
+								$kw = null;
+								unset($kw);
+							}
 						}
 					}
 				}
