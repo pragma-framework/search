@@ -186,8 +186,13 @@ class Processor{
 					$words += isset($val['words']) ? $val['words'] : [];
 				});
 
-				static::$keywords = Keyword::forge()
-					->where('word', 'in', $words)->get_arrays('word');
+				if(!empty($words)) {
+					static::$keywords = Keyword::forge()
+						->where('word', 'in', $words)->get_arrays('word');
+				}
+				else {
+					static::$keywords = [];
+				}
 			}
 			else{
 				static::$keywords = [];
