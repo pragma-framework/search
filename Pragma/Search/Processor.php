@@ -96,14 +96,16 @@ class Processor{
 		$classes = Indexed::forge()->select(['classname'])->get_arrays();
 		if(!empty($classes)){
 			foreach($classes as $c){
-				$all = $c['classname']::all();
-				if(!empty($all)){
-					foreach($all as $obj){
-						static::index_object($obj);
+				if(class_exists($c['classname'])){
+					$all = $c['classname']::all();
+					if(!empty($all)){
+						foreach($all as $obj){
+							static::index_object($obj);
+						}
 					}
+					$all = null;
+					unset($all);
 				}
-				$all = null;
-				unset($all);
 			}
 		}
 	}
