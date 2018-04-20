@@ -47,6 +47,7 @@ class Search{
 		}
 
 		$keywords = [];
+		$kw_origins = [];
 		foreach($words as $w){
 			$against = "";
 			switch($precision){
@@ -65,10 +66,16 @@ class Search{
 					break;
 			}
 
-			$keywords += Keyword::forge()
+			$kws = Keyword::forge()
 									->select(['id', 'word'])
 									->where($extend_to_lemmes ? 'lemme' : 'word', 'LIKE', $against)
 									->get_arrays('id');
+
+			foreach($kws as $id => $k) {
+				$kw_origins[$id] = $w;
+			}
+
+			$keywords += $kws;
 		}
 
 		$objects = $ranked = $contexts = [];
@@ -105,7 +112,7 @@ class Search{
 				$counts = [];
 				foreach($indexes as $data){
 					if(!isset($counts[$data['indexable_type']][$data['indexable_id']][$data['keyword_id']])){
-						$counts[$data['indexable_type']][$data['indexable_id']][$data['keyword_id']] = 1;
+						$counts[$data['indexable_type']][$data['indexable_id']][$kw_origins[$data['keyword_id']]] = 1;
 					}
 
 					if( $with_context ){
@@ -146,6 +153,7 @@ class Search{
 						$objects[$data['indexable_type']][$data['indexable_id']][] = $from;
 					}
 				}
+				unset($$kw_origins);
 
 				/*
 				We only return the results that are affected by the $threshold (2/3 by default) of the keywords
