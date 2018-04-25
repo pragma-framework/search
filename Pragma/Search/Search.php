@@ -153,7 +153,7 @@ class Search{
 						$objects[$data['indexable_type']][$data['indexable_id']][] = $from;
 					}
 				}
-				unset($$kw_origins);
+				unset($kw_origins);
 
 				/*
 				We only return the results that are affected by the $threshold (2/3 by default) of the keywords
