@@ -10,7 +10,7 @@
         "php": ">=5.3.0",
         "pragma-framework/core": ">=1.0.0",
         "robmorgan/phinx": "^0.8.0",
-        "wamania/php-stemmer": "dev-master"
+        "wamania/php-stemmer": "^1.2"
     },
      "autoload": {
         "psr-0" : { "Pragma\\Search" : "." }
