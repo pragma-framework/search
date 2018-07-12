@@ -115,7 +115,16 @@ class Processor{
 		$pendings = PendingIndexCol::forge()->get_arrays();
 		if(!empty($pendings)){
 			$cobayes = [];
+			$can_truncate = true;
+			$keep_ids = [];
 			foreach($pendings as $p){
+				//if the project shares the DB with other apps
+				if( ! class_exists($p['indexable_type'])) {
+					$can_truncate = false;
+					$keep_ids[$p['id']] = $p['id'];
+					continue;
+				}
+
 				if( ! isset($cobayes[$p['indexable_type']])){
 					$cobayes[$p['indexable_type']] = new $p['indexable_type'];
 				}
@@ -132,7 +141,14 @@ class Processor{
 			}
 		}
 		$db = DB::getDB();
-		$db->query('TRUNCATE '.PendingIndexCol::getTableName());
+		if($can_truncate) {
+			$db->query('TRUNCATE '.PendingIndexCol::getTableName());
+		}
+		else if (!empty($keep_ids)) {
+			$params = [];
+			$db->query('DELETE FROM '.PendingIndexCol::getTableName().' WHERE id NOT IN ('.$db->getPDOParamsFor($keep_ids, $params).')', $params);
+		}
+
 		static::clean_trailing_keywords();
 	}
 
