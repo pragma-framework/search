@@ -156,9 +156,17 @@ class Processor{
 				if($immediatly){
 					static::init_keywords(true, $parsing);
 				}
+
+				$contexts = [];
+				$words = [];
 				foreach($parsing as $p){
 					if(!empty($p['words'])){
-						$context = Context::build(['context' => $p['line']])->save();
+						if(!isset($contexts[$p['line']])) {
+							$contexts[$p['line']] = Context::build(['context' => $p['line']])->save();
+						}
+
+						$context = $contexts[$p['line']];
+
 						foreach($p['words'] as $w){
 							if(isset(static::$keywords[$w])){
 								$kw = Keyword::build(static::$keywords[$w]);//no save
@@ -171,7 +179,8 @@ class Processor{
 								}
 							}
 
-							if($kw) {
+							if($kw && ! isset($words[$context->id][$w])) {
+								$words[$context->id][$w] = 1;
 								$kw->store($context, $classname, $id, $col);
 								$kw = null;
 								unset($kw);
@@ -179,6 +188,8 @@ class Processor{
 						}
 					}
 				}
+				unset($contexts);
+				unset($words);
 			}
 		}
 	}
