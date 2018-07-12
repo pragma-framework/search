@@ -115,7 +115,16 @@ class Processor{
 		$pendings = PendingIndexCol::forge()->get_arrays();
 		if(!empty($pendings)){
 			$cobayes = [];
+			$can_truncate = true;
+			$keep_ids = [];
 			foreach($pendings as $p){
+				//if the project shares the DB with other apps
+				if( ! class_exists($p['indexable_type'])) {
+					$can_truncate = false;
+					$keep_ids[$p['id']] = $p['id'];
+					continue;
+				}
+
 				if( ! isset($cobayes[$p['indexable_type']])){
 					$cobayes[$p['indexable_type']] = new $p['indexable_type'];
 				}
@@ -132,7 +141,14 @@ class Processor{
 			}
 		}
 		$db = DB::getDB();
-		$db->query('TRUNCATE '.PendingIndexCol::getTableName());
+		if($can_truncate) {
+			$db->query('TRUNCATE '.PendingIndexCol::getTableName());
+		}
+		else if (!empty($keep_ids)) {
+			$params = [];
+			$db->query('DELETE FROM '.PendingIndexCol::getTableName().' WHERE id NOT IN ('.$db->getPDOParamsFor($keep_ids, $params).')', $params);
+		}
+
 		static::clean_trailing_keywords();
 	}
 
@@ -156,9 +172,17 @@ class Processor{
 				if($immediatly){
 					static::init_keywords(true, $parsing);
 				}
+
+				$contexts = [];
+				$words = [];
 				foreach($parsing as $p){
 					if(!empty($p['words'])){
-						$context = Context::build(['context' => $p['line']])->save();
+						if(!isset($contexts[$p['line']])) {
+							$contexts[$p['line']] = Context::build(['context' => $p['line']])->save();
+						}
+
+						$context = $contexts[$p['line']];
+
 						foreach($p['words'] as $w){
 							if(isset(static::$keywords[$w])){
 								$kw = Keyword::build(static::$keywords[$w]);//no save
@@ -171,7 +195,8 @@ class Processor{
 								}
 							}
 
-							if($kw) {
+							if($kw && ! isset($words[$context->id][$w])) {
+								$words[$context->id][$w] = 1;
 								$kw->store($context, $classname, $id, $col);
 								$kw = null;
 								unset($kw);
@@ -179,6 +204,8 @@ class Processor{
 						}
 					}
 				}
+				unset($contexts);
+				unset($words);
 			}
 		}
 	}
