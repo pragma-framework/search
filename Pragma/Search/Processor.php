@@ -78,7 +78,6 @@ class Processor{
 			list($cols, $infile) = $obj->get_indexed_cols();
 			if(empty($cols)){
 				throw new Exception("Object ".get_class($obj)." has no column to index", 1);
-				return;
 			}
 
 			foreach($cols as $col => $idx){
