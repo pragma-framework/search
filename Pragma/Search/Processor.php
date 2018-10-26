@@ -77,7 +77,7 @@ class Processor{
 		if(method_exists($obj, 'get_indexed_cols')){
 			list($cols, $infile) = $obj->get_indexed_cols();
 			if(empty($cols)){
-				throw new Exception("Object ".get_class($obj)." has no column to index", 1);
+				throw new \Exception("Object ".get_class($obj)." has no column to index", 1);
 				return;
 			}
 
@@ -86,18 +86,33 @@ class Processor{
 			}
 		}
 		else{
-			throw new Exception("Object ".get_class($obj)." is not searchable", 1);
+			throw new \Exception("Object ".get_class($obj)." is not searchable", 1);
 		}
 	}
 
 	public static function rebuild(){//repart de 0
 		static::clean_all();
 		static::$keywords = [];//no need to do a sql query
-		$classes = Indexed::forge()->select(['classname'])->get_arrays();
+		$classes = Indexed::forge()->select(['classname', 'polyfilters'])->get_arrays();
 		if(!empty($classes)){
 			foreach($classes as $c){
 				if(class_exists($c['classname'])){
-					$all = $c['classname']::all();
+					$all = [];
+					if(empty($c['polyfilters'])) {
+						$all = $c['classname']::all();
+					}
+					else {//need to create a query based on the filters
+						$filters = json_decode($c['polyfilters'], true);
+						$qb = $c['classname']::forge();
+						if(!empty($filters)) {
+							foreach($filters as $f) {
+								if(is_array($f) && count($f) == 3) {
+									$qb->where($f[0], $f[1], $f[2]);//assuming that the developper knows its columns
+								}
+							}
+							$all = $qb->get_objects();
+						}
+					}
 					if(!empty($all)){
 						foreach($all as $obj){
 							static::index_object($obj);
@@ -175,13 +190,19 @@ class Processor{
 
 				$contexts = [];
 				$words = [];
+
+				$skip_contexts = defined('PRAGMA_SEARCH_SKIP_CONTEXT') && PRAGMA_SEARCH_SKIP_CONTEXT;
+
 				foreach($parsing as $p){
 					if(!empty($p['words'])){
-						if(!isset($contexts[$p['line']])) {
-							$contexts[$p['line']] = Context::build(['context' => $p['line']])->save();
-						}
 
-						$context = $contexts[$p['line']];
+						if( ! $skip_contexts ) {
+							if(!isset($contexts[$p['line']])) {
+								$contexts[$p['line']] = Context::build(['context' => $p['line']])->save();
+							}
+
+							$context = $contexts[$p['line']];
+						}
 
 						foreach($p['words'] as $w){
 							if(isset(static::$keywords[$w])){
@@ -195,9 +216,17 @@ class Processor{
 								}
 							}
 
-							if($kw && ! isset($words[$context->id][$w])) {
-								$words[$context->id][$w] = 1;
-								$kw->store($context, $classname, $id, $col);
+							if ( ! $skip_contexts ) {
+								if($kw && ! isset($words[$context->id][$w])) {
+									$words[$context->id][$w] = 1;
+									$kw->store($context, $classname, $id, $col);
+									$kw = null;
+									unset($kw);
+								}
+							}
+							else if($kw && ! isset($words[$id][$col][$w])) { // if the contexts are skipped, the unicity will be based on the indexable_id and the keyword_id and the col
+								$words[$id][$col][$w] = 1;
+								$kw->store(null, $classname, $id, $col);//context_id will be null
 								$kw = null;
 								unset($kw);
 							}
