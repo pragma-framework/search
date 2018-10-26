@@ -38,7 +38,7 @@ class Keyword extends Model{
 		}
 	}
 
-	public function store($context, $classname, $id, $col){
+	public function store(Context $context = null, $classname, $id, $col){
 		Index::build([
 			'keyword_id' 			=> $this->id,
 			'context_id'			=> ! is_null($context) ? $context->id : null,
