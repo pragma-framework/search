@@ -9,8 +9,8 @@ trait Searchable{
 	protected $index_was_new = true;
 	protected $immediatly_indexed = false;
 
-	protected function index_cols(){
-		$this->indexed_cols = array_flip(func_get_args());
+	protected function index_cols(...$cols){
+		$this->indexed_cols = array_flip($cols);
 		$this->pushHook('before_save', 'init_index_was_new');
 		$this->pushHook('after_save', 'handle_index');
 		$this->pushHook('after_open', 'index_init_values');
