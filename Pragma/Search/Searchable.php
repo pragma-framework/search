@@ -9,11 +9,12 @@ trait Searchable{
 	protected $index_was_new = true;
 	protected $immediatly_indexed = false;
 
-	protected function index_cols(){
-		$this->indexed_cols = array_flip(func_get_args());
+	protected function index_cols(...$cols){
+		$this->indexed_cols = array_flip($cols);
 		$this->pushHook('before_save', 'init_index_was_new');
 		$this->pushHook('after_save', 'handle_index');
 		$this->pushHook('after_open', 'index_init_values');
+		$this->pushHook('after_build', 'index_init_values');
 		$this->pushHook('before_delete', 'index_delete');
 
 		return $this;
@@ -31,11 +32,8 @@ trait Searchable{
 		return $this;
 	}
 
-	protected function index_init_values($force = false){
-		if( ! $this->initialized || $force){
-			$this->initial_values = $this->fields;
-			$this->initialized = true;
-		}
+	protected function index_init_values(){
+		$this->enableChangesDetection(true);
 	}
 
 	protected function init_index_was_new(){
@@ -44,7 +42,6 @@ trait Searchable{
 
 	protected function handle_index($last = false){
 		if( empty($this->indexed_cols) ){
-			$this->index_init_values($last);
 			return false;
 		}
 
@@ -54,8 +51,6 @@ trait Searchable{
 		else{
 			$this->index_prepare($last);
 		}
-
-		$this->index_init_values($last);
 		return true;
 	}
 

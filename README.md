@@ -28,6 +28,10 @@ For CLI indexation.
 
 By default, the min length is 3 characters. But you can define a custom constant named `PRAGMA_SEARCH_MIN_WORD_LENGTH` in order to change this behavior.
 
+## Skip the contexts during the indexation
+
+If you don't aim to display the context of a result coming from the search, you can skip the contexts during the indexation by setting `PRAGMA_SEARCH_SKIP_CONTEXT` to `true`.
+
 ## CLI exec
 
 	php public/index.php indexer:run
@@ -35,3 +39,5 @@ By default, the min length is 3 characters. But you can define a custom constant
 or
 
 	php public/index.php indexer:rebuild
+
+
