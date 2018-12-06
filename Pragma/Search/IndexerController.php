@@ -32,7 +32,8 @@ class IndexerController{
 
 		foreach($classes as $c){
 			if(strpos($c, '\\Models\\') !== false){
-				if (in_array('Pragma\\Search\\Searchable', class_uses($c))){
+                $ref = new \ReflectionClass($c);
+				if (in_array('Pragma\\Search\\Searchable', class_uses($c)) && !$ref->isAbstract()){
 					new $c();
 				}
 			}
