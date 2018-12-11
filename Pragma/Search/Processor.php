@@ -138,6 +138,13 @@ class Processor{
 					$can_truncate = false;
 					$keep_ids[$p['id']] = $p['id'];
 					continue;
+				}else{
+					$ref = new \ReflectionClass($p['indexable_type']);
+					if($ref->isAbstract()){
+						$can_truncate = false;
+						$keep_ids[$p['id']] = $p['id'];
+						continue;
+					}
 				}
 
 				if( ! isset($cobayes[$p['indexable_type']])){
