@@ -1,5 +1,7 @@
 <?php
-require_once __DIR__.'/../../../config/config.php';
+if(file_exists(__DIR__.'/../../../config/config.php')){
+    require_once __DIR__.'/../../../config/config.php';
+}
 if(defined('EXTRA_CONFIGS') && is_array(EXTRA_CONFIGS)) {
     foreach(EXTRA_CONFIGS as $conf) {
         if(file_exists(__DIR__.'/../../../'.$conf)) {
