@@ -45,20 +45,22 @@ trait Searchable{
 			return false;
 		}
 
-		if($this->immediatly_indexed){
-			Processor::index_object($this, true, true);
-		}
-		else{
-			$this->index_prepare($last);
-		}
+		$this->index_prepare($last);
+
 		return true;
 	}
 
 	protected function index_prepare($last = false){
+		$needImmediateIndex = false;
 		if( $this->index_was_new ){
 			foreach($this->indexed_cols as $col => $value){
 				if(!empty($this->$col)){
-					PendingIndexCol::store($this, $col, isset($this->infile_cols[$col]));
+					if( ! $this->immediatly_indexed) {
+						PendingIndexCol::store($this, $col, isset($this->infile_cols[$col]));
+					}
+					else {
+						$needImmediateIndex = true;
+					}
 				}
 			}
 		}
@@ -68,9 +70,18 @@ trait Searchable{
 						array_key_exists($col, $this->initial_values) &&
 						$value != $this->$col
 					){
-					PendingIndexCol::store($this, $col, isset($this->infile_cols[$col]));
+					if( ! $this->immediatly_indexed) {
+						PendingIndexCol::store($this, $col, isset($this->infile_cols[$col]));
+					}
+					else {
+						$needImmediateIndex = true;
+					}
 				}
 			}
+		}
+
+		if($needImmediateIndex) {
+			Processor::index_object($this, true, true);//immediate indexation of the object only if the obhect changed
 		}
 		return true;
 	}
