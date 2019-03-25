@@ -11,11 +11,11 @@ trait Searchable{
 
 	protected function index_cols(...$cols){
 		$this->indexed_cols = array_flip($cols);
-		$this->pushHook('before_save', 'init_index_was_new');
-		$this->pushHook('after_save', 'handle_index');
-		$this->pushHook('after_open', 'index_init_values');
-		$this->pushHook('after_build', 'index_init_values');
-		$this->pushHook('before_delete', 'index_delete');
+		$this->pushHook('before_save', 'init_index_was_new', 'pragma:search:init_index_was_new');
+		$this->pushHook('after_save', 'handle_index', 'pragma:search:handle_index');
+		$this->pushHook('after_open', 'index_init_values', 'pragma:search:index_init_values_after_open');
+		$this->pushHook('after_build', 'index_init_values', 'pragma:search:index_init_values_after_build');
+		$this->pushHook('before_delete', 'index_delete', 'pragma:search:index_delete');
 
 		return $this;
 	}
