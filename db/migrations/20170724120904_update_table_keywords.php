@@ -30,7 +30,7 @@ class UpdateTableKeywords extends AbstractMigration
         $t = $this->table('keywords');
         $t->changeColumn('word', 'char', ['limit' => 64, 'collation' => 'utf8_bin'])->update();
     }
-    public function donw()
+    public function down()
     {
         $t = $this->table('keywords');
         $t->changeColumn('word', 'char', ['limit' => 64, 'collation' => 'utf8_general_ci'])->update();
