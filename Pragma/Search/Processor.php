@@ -129,9 +129,8 @@ class Processor{
 		static::init_keywords();
 		$pendings = PendingIndexCol::forge()->get_arrays();
 		if(!empty($pendings)){
-			$cobayes = [];
+			$cobayes = $keep_ids = [];
 			$can_truncate = true;
-			$keep_ids = [];
 			foreach($pendings as $p){
 				//if the project shares the DB with other apps
 				if( ! class_exists($p['indexable_type'])) {
@@ -161,14 +160,14 @@ class Processor{
 					static::index_col($p['indexable_type'], $p['indexable_id'], $p['col'], $p['value'], $p['infile'], true);//true : we should clean the index before re-indexing the col
 				}
 			}
-		}
-		$db = DB::getDB();
-		if($can_truncate) {
-			$db->query('TRUNCATE '.PendingIndexCol::getTableName());
-		}
-		else if (!empty($keep_ids)) {
-			$params = [];
-			$db->query('DELETE FROM '.PendingIndexCol::getTableName().' WHERE id NOT IN ('.$db->getPDOParamsFor($keep_ids, $params).')', $params);
+			$db = DB::getDB();
+			if($can_truncate) {
+				$db->query('TRUNCATE '.PendingIndexCol::getTableName());
+			}
+			else if (!empty($keep_ids)) {
+				$params = [];
+				$db->query('DELETE FROM '.PendingIndexCol::getTableName().' WHERE id NOT IN ('.$db->getPDOParamsFor($keep_ids, $params).')', $params);
+			}
 		}
 
 		static::clean_trailing_keywords();
