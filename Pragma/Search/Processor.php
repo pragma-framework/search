@@ -99,7 +99,9 @@ class Processor{
 				if(class_exists($c['classname'])){
 					$all = [];
 					if(empty($c['polyfilters'])) {
-						$all = $c['classname']::all();
+						$all = $c['classname']::all(true, function(&$obj) {
+							$obj->skipHooks();
+						} );
 					}
 					else {//need to create a query based on the filters
 						$filters = json_decode($c['polyfilters'], true);
