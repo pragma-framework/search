@@ -45,12 +45,16 @@ class IndexerController
                 if (strpos($c, '\\Models\\') !== false) {
                     $ref = new \ReflectionClass($c);
                     if (in_array('Pragma\\Search\\Searchable', self::class_uses_deep($c)) && !$ref->isAbstract()) {
-                        if (isset($indexed[$c])) {
-                            unset($indexed[$c]);
-                        } else {
-                            Indexed::build([
-                                'classname' => $c,
-                            ])->save();
+                        $inst = $ref->newInstance();
+                        $indexedCols = $inst->get_indexed_cols();
+                        if (!empty($indexedCols[0]) || !empty($indexedCols[1])) {
+                            if (isset($indexed[$c])) {
+                                unset($indexed[$c]);
+                            } else {
+                                Indexed::build([
+                                    'classname' => $c,
+                                ])->save();
+                            }
                         }
                     }
                 }
