@@ -82,7 +82,25 @@ class Processor{
 			}
 
 			foreach($cols as $col => $idx){
-				static::index_col(get_class($obj), $obj->id, $col, $obj->$col, isset($infile[$col]), $clean, $immediatly);
+				$pk = $obj->get_primary_key();
+				$objID = "";
+				if(is_array($pk)) {
+					$firstPk = true;
+					foreach($pk as $field) {
+						if($firstPk) {
+							$firstPk = false;
+						}
+						else {
+							$objID .= ':';
+						}
+						$objID .= $obj->$field;
+					}
+				}
+				else {
+					$objID = $obj->$pk;
+				}
+
+				static::index_col(get_class($obj), $objID, $col, $obj->$col, isset($infile[$col]), $clean, $immediatly);
 			}
 		}
 		else{
