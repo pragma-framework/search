@@ -292,26 +292,31 @@ class Processor{
 
 	private static function clean_col_index($classname, $id, $col){
 		$db = DB::getDB();
-		$cids = Index::forge()
-											 ->select('DISTINCT(context_id) as context_id')
-											 ->where('indexable_type', '=', $classname)
-											 ->where('indexable_id', '=', $id)
-											 ->where('col', '=', $col)
-											 ->get_arrays();
-		$todelete = [];
-		foreach($cids as $c){
-			$todelete[] = $c['context_id'];
+
+		$skip_contexts = defined('PRAGMA_SEARCH_SKIP_CONTEXT') && PRAGMA_SEARCH_SKIP_CONTEXT;
+
+		if (!$skip_contexts) {
+			$cids = Index::forge()
+				->select('DISTINCT(context_id) as context_id')
+				->where('indexable_type', '=', $classname)
+				->where('indexable_id', '=', $id)
+				->where('col', '=', $col)
+				->get_arrays();
+			$todelete = [];
+			foreach($cids as $c){
+				$todelete[] = $c['context_id'];
+			}
+
+			if(!empty($todelete)){
+				$params = [];
+				$db->query('DELETE FROM '.Context::getTableName().' WHERE id IN ('.DB::getPDOParamsFor($todelete, $params).')', $params);
+			};
 		}
 
 		$db->query('DELETE FROM '.Index::getTableName().'
 								WHERE indexable_type = ?
 								AND indexable_id = ?
 								AND col = ?', [$classname, $id, $col]);
-
-		if(!empty($todelete)){
-			$params = [];
-			$db->query('DELETE FROM '.Context::getTableName().' WHERE id IN ('.DB::getPDOParamsFor($todelete, $params).')', $params);
-		};
 	}
 
 	private static function clean_all(){
