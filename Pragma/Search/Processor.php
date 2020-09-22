@@ -77,7 +77,7 @@ class Processor{
 		if(method_exists($obj, 'get_indexed_cols')){
 			list($cols, $infile) = $obj->get_indexed_cols();
 			if(empty($cols)){
-				throw new \Exception("Object ".get_class($obj)." has no column to index", 1);
+				trigger_error("Object ".get_class($obj)." has no column to index");
 				return;
 			}
 
@@ -108,10 +108,12 @@ class Processor{
 		}
 	}
 
-	public static function rebuild(){//repart de 0
+	public static function rebuild($classes = []){//repart de 0
 		static::clean_all();
 		static::$keywords = [];//no need to do a sql query
-		$classes = Indexed::forge()->select(['classname', 'polyfilters'])->get_arrays();
+
+		$classes = array_merge($classes, Indexed::forge()->select(['classname', 'polyfilters'])->get_arrays('classname'));
+
 		if(!empty($classes)){
 			foreach($classes as $c){
 				if(class_exists($c['classname'])){

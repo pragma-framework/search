@@ -21,8 +21,16 @@ class IndexerController
     {
         TaskLock::check_lock(realpath('.').'/locks', 'indexer');
 
-        self::loadClasses();
-        Processor::rebuild();
+        $list = self::loadClasses();
+        if(empty($list)) {
+            print_r("Your have no class using Pragma\\Search\\Searchable. You may consider to run `composer dump-autoload -o` before rebuilding your index".PHP_EOL);
+        }
+        try {
+            Processor::rebuild($list);
+        }
+        catch(\Exception $e) {
+            print_r("Exception occured : ".$e->getMessage().PHP_EOL);
+        }
 
         TaskLock::flush(realpath('.').'/locks', 'indexer');
     }
@@ -77,14 +85,19 @@ class IndexerController
         $loader = require realpath(__DIR__.'/../../../..') . '/autoload.php';
         $classes = array_keys($loader->getClassMap());
 
+        $classesList = [];
+
         foreach ($classes as $c) {
             if (strpos($c, '\\Models\\') !== false) {
                 $ref = new \ReflectionClass($c);
-                if (in_array('Pragma\\Search\\Searchable', class_uses($c)) && !$ref->isAbstract()) {
+                if (in_array('Pragma\\Search\\Searchable', self::class_uses_deep($c)) && !$ref->isAbstract()) {
                     new $c();
+                    $classesList[$c] = ['classname' => $c, 'polyfilters' => null];
                 }
             }
         }
+
+        return $classesList;
     }
 
     // https://www.php.net/manual/en/function.class-uses.php#110752
