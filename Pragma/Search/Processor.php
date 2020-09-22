@@ -9,6 +9,8 @@ class Processor{
 	public static $stemmer = null;
 	public static $keywords = null;
 
+	public static $blacklistedClasses = [];
+
 	public static function get_context($text){
 		$lines = preg_split('/[\n\r\t]/', $text, null, PREG_SPLIT_NO_EMPTY);
 		$context = [];
@@ -70,13 +72,19 @@ class Processor{
 	}
 
 	public static function index_object($obj, $clean = false, $immediatly = false){
+		if(isset(static::$blacklistedClasses[get_class($obj)])) {
+			return;
+		}
+
 		if(is_null(static::$keywords) && ! $immediatly){
 			static::init_keywords();//in case we just want to index an object without rebuild the whole index
 		}
 
 		if(method_exists($obj, 'get_indexed_cols')){
+
 			list($cols, $infile) = $obj->get_indexed_cols();
 			if(empty($cols)){
+				static::$blacklistedClasses[get_class($obj)] = true;//in order to avoid a lot of access to this notice
 				trigger_error("Object ".get_class($obj)." has no column to index");
 				return;
 			}
