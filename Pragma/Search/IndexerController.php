@@ -104,9 +104,9 @@ class IndexerController
     protected static function class_uses_deep($class, $autoload = true)
     {
         $traits = [];
-        while ($class = get_parent_class($class)) {
+        do {
             $traits = array_merge(class_uses($class, $autoload), $traits);
-        }
+        } while ($class = get_parent_class($class));
         foreach ($traits as $trait => $same) {
             $traits = array_merge(class_uses($trait, $autoload), $traits);
         }
