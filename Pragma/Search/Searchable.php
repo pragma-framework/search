@@ -85,7 +85,7 @@ trait Searchable{
 		}
 
 		if($needImmediateIndex) {
-			Processor::index_object($this, true, true);//immediate indexation of the object only if the obhect changed
+			Processor::index_object(get_class($this), $this->as_array(), true, true);//immediate indexation of the object only if the object changed
 		}
 		return true;
 	}

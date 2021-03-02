@@ -10,6 +10,7 @@ class Processor{
 	public static $keywords = null;
 
 	public static $blacklistedClasses = [];
+	public static $lambdaModels = [];
 
 	public static function get_context($text){
 		$lines = preg_split('/[\n\r\t]/', $text, null, PREG_SPLIT_NO_EMPTY);
@@ -71,49 +72,66 @@ class Processor{
 		return static::$stemmer;
 	}
 
-	public static function index_object($obj, $clean = false, $immediatly = false){
-		if(isset(static::$blacklistedClasses[get_class($obj)])) {
+	public static function index_object($classname, $data, $clean = false, $immediatly = false){
+		$obj = static::initLambdaForIndex($classname);
+
+		if(isset(static::$blacklistedClasses[$classname])) {
 			return;
 		}
+
+		$obj->openWithFields($data); //opti, we're using only one object in memory and change its values
 
 		if(is_null(static::$keywords) && ! $immediatly){
 			static::init_keywords();//in case we just want to index an object without rebuild the whole index
 		}
 
-		if(method_exists($obj, 'get_indexed_cols')){
+		$objID = implode(':', static::getPkValues($obj));
 
-			list($cols, $infile) = $obj->get_indexed_cols();
-			if(empty($cols)){
-				static::$blacklistedClasses[get_class($obj)] = true;//in order to avoid a lot of access to this notice
-				trigger_error("Object ".get_class($obj)." has no column to index");
-				return;
-			}
+		list($cols, $infile) = $obj->get_indexed_cols();
+		foreach($cols as $col => $idx){
+			static::index_col(get_class($obj), $objID, $col, $obj->$col, isset($infile[$col]), $clean, $immediatly);
+		}
+	}
 
-			foreach($cols as $col => $idx){
-				$pk = $obj->get_primary_key();
-				$objID = "";
-				if(is_array($pk)) {
-					$firstPk = true;
-					foreach($pk as $field) {
-						if($firstPk) {
-							$firstPk = false;
-						}
-						else {
-							$objID .= ':';
-						}
-						$objID .= $obj->$field;
-					}
-				}
-				else {
-					$objID = $obj->$pk;
-				}
+	private static function getPkValues($obj) {
+		$pk = $obj->get_primary_key();
 
-				static::index_col(get_class($obj), $objID, $col, $obj->$col, isset($infile[$col]), $clean, $immediatly);
+		$idValues = [];
+
+		if(is_array($pk)) {
+			$firstPk = true;
+			foreach($pk as $field) {
+				$idValues[] = $obj->$field;
 			}
 		}
-		else{
-			throw new \Exception("Object ".get_class($obj)." is not searchable", 1);
+		else {
+			$idValues = [$obj->$pk];
 		}
+
+		return $idValues;
+	}
+
+	protected static function initLambdaForIndex($classname) {
+		if(!isset(static::$lambdaModels[$classname])) {
+			$obj = new $classname();
+			$obj->skipHooks();
+			$obj->disableChangesDetection();
+			static::$lambdaModels[$classname] = $obj;
+			//we're testing once if the class should be blacklisted
+			if(method_exists($obj, 'get_indexed_cols')){
+				list($cols, $infile) = $obj->get_indexed_cols();
+				if(empty($cols)){
+					trigger_error("Object ".$classname." has no column to index");
+					static::$blacklistedClasses[$classname] = true;//in order to avoid a lot of access to this notice
+					return null;
+				}
+			}
+			else {
+				throw new \Exception("Object ".get_class($obj)." is not searchable", 1);
+			}
+			return $obj;
+		}
+		else return static::$lambdaModels[$classname];
 	}
 
 	public static function rebuild($classes = []){//repart de 0
@@ -124,32 +142,42 @@ class Processor{
 
 		if(!empty($classes)){
 			foreach($classes as $c){
-				if(class_exists($c['classname'])){
+				if(class_exists($c['classname']) && $lambda = static::initLambdaForIndex($c['classname'])) {
+					list($cols, $infile) = $lambda->get_indexed_cols();
+					$pks = $lambda->get_primary_key();
+					if(!is_array($pks)) {
+						$pks = [$pks];
+					}
+
+					$colsToIndex = array_merge($pks, array_keys($cols), array_keys($infile));
+
 					$all = [];
 					if(empty($c['polyfilters'])) {
-						$all = $c['classname']::all(true, function(&$obj) {
-							$obj->skipHooks();
-						} );
+						$all = $c['classname']::forge()->select($colsToIndex)->get_arrays();
 					}
 					else {//need to create a query based on the filters
 						$filters = json_decode($c['polyfilters'], true);
-						$qb = $c['classname']::forge();
+						$qb = $c['classname']::forge()->select($colsToIndex);
 						if(!empty($filters)) {
 							foreach($filters as $f) {
 								if(is_array($f) && count($f) == 3) {
 									$qb->where($f[0], $f[1], $f[2]);//assuming that the developper knows its columns
 								}
 							}
-							$all = $qb->get_objects();
+							$all = $qb->get_arrays();
 						}
 					}
 					if(!empty($all)){
-						foreach($all as $obj){
-							static::index_object($obj);
+						foreach($all as $data){
+							static::index_object($c['classname'], $data);
 						}
 					}
 					$all = null;
 					unset($all);
+					$pks = null;
+					unset($pks);
+					$colsToIndex = null;
+					unset($colsToIndex);
 				}
 			}
 		}
@@ -242,13 +270,13 @@ class Processor{
 
 						foreach($p['words'] as $w){
 							if(isset(static::$keywords[$w])){
-								$kw = Keyword::build(static::$keywords[$w]);//no save
+								$kw = Keyword::build([static::$keywords[$w]]);//no save
 							}
 							else{
 								//create can return a null object if the word is duplicated because of too many characters
 								$kw = Keyword::create($w, static::getStemmer()->stem($w));
 								if($kw) {
-									static::$keywords[$w] = $kw->as_array();
+									static::$keywords[$w] = $kw->id;
 								}
 							}
 
@@ -269,6 +297,7 @@ class Processor{
 						}
 					}
 				}
+				unset($parsing);
 				unset($contexts);
 				unset($words);
 			}
@@ -277,7 +306,12 @@ class Processor{
 
 	private static function init_keywords($short_listed = false, $list = []){
 		if( ! $short_listed ){
-			static::$keywords = Keyword::forge()->get_arrays('word');
+			$kws = Keyword::forge()->select(['word', 'id'])->get_arrays('word');
+			if(!empty($kws)) {
+				foreach($kws as $k) {
+					static::$keywords[$k['word']] = $k['id'];
+				}
+			}
 		}
 		else{//we want to restrict the memory usage (especially in an immediat indexation)
 			$words = [];
@@ -287,8 +321,13 @@ class Processor{
 				});
 
 				if(!empty($words)) {
-					static::$keywords = Keyword::forge()
-						->where('word', 'in', $words)->get_arrays('word');
+					$kws = Keyword::forge()
+						->where('word', 'in', $words)->select(['word', 'id'])->get_arrays('word');
+					if(!empty($kws)) {
+						foreach($kws as $k) {
+							static::$keywords[$k['word']] = $k['id'];
+						}
+					}
 				}
 				else {
 					static::$keywords = [];
