@@ -273,7 +273,7 @@ class Processor{
 
 						foreach($p['words'] as $w){
 							if(isset(static::$keywords[$w])){
-								$kw = Keyword::build([static::$keywords[$w]]);//no save
+								$kw = Keyword::build(["id" => static::$keywords[$w]]);//no save
 							}
 							else{
 								//create can return a null object if the word is duplicated because of too many characters
