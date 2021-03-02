@@ -149,7 +149,8 @@ class Processor{
 						$pks = [$pks];
 					}
 
-					$colsToIndex = array_merge($pks, array_keys($cols), array_keys($infile));
+					$desc = array_keys($lambda->describe());
+					$colsToIndex = array_merge($pks, array_intersect($desc, array_keys($cols)), array_intersect($desc, array_keys($infile)));
 
 					$all = [];
 					if(empty($c['polyfilters'])) {
@@ -178,6 +179,8 @@ class Processor{
 					unset($pks);
 					$colsToIndex = null;
 					unset($colsToIndex);
+					$desc = null;
+					unset($desc);
 				}
 			}
 		}
