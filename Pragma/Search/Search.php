@@ -87,6 +87,8 @@ class Search{
 
 		$objects = $ranked = $contexts = [];
 
+		$truncated = false;
+
 		if( ! empty($keywords) ){
 			$details = ['keyword_id', 'indexable_type', 'indexable_id', 'col'];
 			if($with_context){
@@ -194,7 +196,6 @@ class Search{
 					$ranked = $tmp;
 				}
 
-				$truncated = false;
 				if(!is_null($max_distinct_results)) {
 					switch($results_type) {
 						case self::RANKED_RESULTS:
