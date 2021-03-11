@@ -23,6 +23,8 @@ class Search{
 	* $min_word_length : allow the developper to handle only words with a length greater (>=) than the one he choose
 	* $min_word_length : allow to limit the number of distinct indexes treated with the sql query.
 	*										 It does not ensure that the final result will be exactly the same as the limit
+	* $queryFilters : is callback function taking for argument a queryBuilder and returning this queryBuilder.
+										It allows to directly filter the result by modifying the query on the index
 	*/
 	public static function process($query,
 																 $results_type = self::RANKED_RESULTS,
@@ -33,7 +35,8 @@ class Search{
 																 $cols = null,
 																 $threshold = 2/3,
 																 $min_word_length = null,
-																 $max_distinct_results = null
+																 $max_distinct_results = null,
+																 $queryFilters = null
 																){
 
 		$with_context = $with_context && (!defined(PRAGMA_SEARCH_SKIP_CONTEXT) || ! PRAGMA_SEARCH_SKIP_CONTEXT);
@@ -113,6 +116,10 @@ class Search{
 				}
 
 				$query->where('col', 'in', $cols);
+			}
+
+			if( ! is_null($queryFilters) && is_callable($queryFilters)) {
+				$query = call_user_func($queryFilters, $query);
 			}
 
 			$indexes = $query->get_arrays();
