@@ -134,15 +134,25 @@ class Processor{
 		else return static::$lambdaModels[$classname];
 	}
 
-	public static function rebuild($classes = []){//repart de 0
-		static::clean_all();
+	public static function rebuild($classes = [], $short_cleaning = false, $keep_indexed_exceptions = true){//repart de 0
+		if(!$short_cleaning) {
+			static::clean_all();
+		}
+		else if(!empty($classes)) { //selective cleaning
+			$classnames = array_map(function($e) { return isset($e['classname']) ? $e['classname'] : ''; }, $classes);
+			$params = [];
+			DB::getDB()->query('DELETE FROM '.\Pragma\Search\Index::getTableName().' WHERE indexable_type IN ('.DB::getDB()->getPDOParamsFor($classnames, $params).')', $params);
+		}
 		static::$keywords = [];//no need to do a sql query
 
-		$classes = array_merge($classes, Indexed::forge()->select(['classname', 'polyfilters'])->get_arrays('classname'));
+		if($keep_indexed_exceptions) {
+			$classes = array_merge($classes, Indexed::forge()->select(['classname', 'polyfilters'])->get_arrays('classname'));
+		}
 
 		if(!empty($classes)){
-			foreach($classes as $c){
+			foreach($classes as $idx => $c){
 				if(class_exists($c['classname']) && $lambda = static::initLambdaForIndex($c['classname'])) {
+
 					list($cols, $infile) = $lambda->get_indexed_cols();
 					$pks = $lambda->get_primary_key();
 					if(!is_array($pks)) {
@@ -153,8 +163,9 @@ class Processor{
 					$colsToIndex = array_merge($pks, array_intersect($desc, array_keys($cols)), array_intersect($desc, array_keys($infile)));
 
 					$all = [];
+					$qb = null;
 					if(empty($c['polyfilters'])) {
-						$all = $c['classname']::forge()->select($colsToIndex)->get_arrays();
+						$qb = $c['classname']::forge()->select($colsToIndex);
 					}
 					else {//need to create a query based on the filters
 						$filters = json_decode($c['polyfilters'], true);
@@ -165,9 +176,11 @@ class Processor{
 									$qb->where($f[0], $f[1], $f[2]);//assuming that the developper knows its columns
 								}
 							}
-							$all = $qb->get_arrays();
 						}
 					}
+
+					$all = $qb->get_arrays();
+
 					if(!empty($all)){
 						foreach($all as $data){
 							static::index_object($c['classname'], $data);
@@ -292,6 +305,7 @@ class Processor{
 								}
 							}
 							else if($kw && ! isset($words[$id][$col][$w])) { // if the contexts are skipped, the unicity will be based on the indexable_id and the keyword_id and the col
+
 								$words[$id][$col][$w] = 1;
 								$kw->store(null, $classname, $id, $col);//context_id will be null
 								$kw = null;

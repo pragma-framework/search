@@ -31,7 +31,9 @@ class Keyword extends Model{
 				])->save();
 		}
 		catch(\Pragma\Exceptions\DBException $e) {
-			return null;
+			//duplicate Word ?
+			$existingWord = static::forge()->where('word', '=', $word)->where('lemme', '=', $lemme)->first();
+			return $existingWord ? $existingWord : null;
 		}
 		catch(\Exception $e1) {
 			return null;

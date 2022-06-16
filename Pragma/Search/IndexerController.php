@@ -21,12 +21,23 @@ class IndexerController
     {
         TaskLock::check_lock(realpath('.').'/locks', 'indexer');
 
-        $list = self::loadClasses();
-        if(empty($list)) {
+        $options = \Pragma\Router\Request::getRequest()->parse_params(false);
+        $classes = [];
+        $short = false;
+        if(isset($options['c']) || isset($options['classes'])) {
+            $classes = explode(',', str_replace(" ", "", isset($options['c']) ? $options['c'] : $options['classes']));
+            $classes = array_map(function($e) { return ['classname' => $e, 'polyfilters' => null]; }, $classes);
+            $short = true;
+        }
+        else {
+            $classes = self::loadClasses();
+        }
+
+        if(empty($classes)) {
             print_r("Your have no class using Pragma\\Search\\Searchable. You may consider to run `composer dump-autoload -o` before rebuilding your index".PHP_EOL);
         }
         try {
-            Processor::rebuild($list);
+            Processor::rebuild($classes, $short, false);
         }
         catch(\Exception $e) {
             print_r("Exception occured : ".$e->getMessage().PHP_EOL);
