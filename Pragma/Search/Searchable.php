@@ -70,15 +70,25 @@ trait Searchable{
 		}
 		else{
 			foreach($this->initial_values as $col => $value){
-				if( !empty($this->$col) && isset($this->indexed_cols[$col]) &&
+				if(isset($this->indexed_cols[$col]) &&
 						array_key_exists($col, $this->initial_values) &&
 						$value != $this->$col
 					){
-					if( ! $this->immediatly_indexed) {
-						PendingIndexCol::store($this, $col, isset($this->infile_cols[$col]));
+					if(!empty($this->$col)){
+						if( ! $this->immediatly_indexed) {
+							PendingIndexCol::store($this, $col, isset($this->infile_cols[$col]));
+						}
+						else {
+							$needImmediateIndex = true;
+						}
 					}
 					else {
-						$needImmediateIndex = true;
+						if( ! $this->immediatly_indexed) {
+							PendingIndexCol::store($this, $col, isset($this->infile_cols[$col]), true);
+						}
+						else {
+							Processor::clean_col_index(get_class($this), $this->id, $col);
+						}
 					}
 				}
 			}

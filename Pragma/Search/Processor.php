@@ -227,8 +227,12 @@ class Processor{
 				list($cols, $infile) = $cobayes[$p['indexable_type']]->get_indexed_cols();
 
 				if($p['deleted']){
-					foreach($cols as $col => $i){
-						static::clean_col_index($p['indexable_type'], $p['indexable_id'], $col);
+					if(($p['col'] === 'id') || !isset($cols[$p['col']])){
+						foreach($cols as $col => $i){
+							static::clean_col_index($p['indexable_type'], $p['indexable_id'], $col);
+						}
+					} else {
+						static::clean_col_index($p['indexable_type'], $p['indexable_id'], $p['col']);
 					}
 				}else{
 					static::index_col($p['indexable_type'], $p['indexable_id'], $p['col'], $p['value'], $p['infile'], true);//true : we should clean the index before re-indexing the col
@@ -356,7 +360,7 @@ class Processor{
 		}
 	}
 
-	private static function clean_col_index($classname, $id, $col){
+	public static function clean_col_index($classname, $id, $col){
 		$db = DB::getDB();
 
 		$skip_contexts = defined('PRAGMA_SEARCH_SKIP_CONTEXT') && PRAGMA_SEARCH_SKIP_CONTEXT;
