@@ -16,7 +16,7 @@ class PendingIndexCol extends Model{
 		return DB_PREFIX.self::TABLE_NAME;
 	}
 
-	public static function store($obj, $col, $infile = false){
+	public static function store($obj, $col, $infile = false, $delete = false){
 		$db = DB::getDB();
 		$db->query('DELETE FROM '.static::getTableName().'
 								WHERE indexable_type = ?
@@ -28,7 +28,8 @@ class PendingIndexCol extends Model{
 			'indexable_id' 		=> $obj->id,
 			'col' 						=> $col,
 			'infile'					=> $infile,
-			'value'						=> $obj->$col
+			'value'						=> $obj->$col,
+			'deleted'					=> $delete
 			])->save();
 
 
