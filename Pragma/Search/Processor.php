@@ -13,7 +13,7 @@ class Processor{
 	public static $lambdaModels = [];
 
 	public static function get_context($text){
-		$lines = preg_split('/[\n\r\t]/', $text, null, PREG_SPLIT_NO_EMPTY);
+		$lines = preg_split('/[\n\r\t]/', $text, -1, PREG_SPLIT_NO_EMPTY);
 		$context = [];
 		if(!empty($lines)){
 			array_walk($lines, function($line, $k) use (&$context){
@@ -39,7 +39,7 @@ class Processor{
 			}
 		}
 
-		$words = preg_split('/([\s!=\+:;\*\/\?,\'’`"&\(\)_¶§\|%\p{So}<>]+)|\.(?!\w)|( -)|(- )/mui', trim(self::clean_accents($line)), null, PREG_SPLIT_NO_EMPTY);
+		$words = preg_split('/([\s!=\+:;\*\/\?,\'’`"&\(\)_¶§\|%\p{So}<>]+)|\.(?!\w)|( -)|(- )/mui', trim(self::clean_accents($line)), -1, PREG_SPLIT_NO_EMPTY);
 		$cleaned = [];
 		if(!empty($words)){
 			//preprocessing of the words founded
@@ -66,7 +66,7 @@ class Processor{
 
 	public static function getStemmer(){
 		if(is_null(static::$stemmer)){
-			$stem_lang = defined('STEMMER_LANGUAGE') ? "Wamania\\Snowball\\".STEMMER_LANGUAGE : "Wamania\\Snowball\\English";
+			$stem_lang = defined('STEMMER_LANGUAGE') ? "Wamania\\Snowball\\Stemmer\\".STEMMER_LANGUAGE : "Wamania\\Snowball\\Stemmer\\English";
 			static::$stemmer = new $stem_lang();
 		}
 		return static::$stemmer;
