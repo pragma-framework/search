@@ -54,6 +54,11 @@ class Processor{
 							return \mb_strlen($val) >= static::$threshold;
 					}));
 				}
+				if(\strpos($w, '.') !== false){ //ex : domain name
+					$cleaned = array_merge($cleaned, array_filter(explode('.', $w), function($val) {
+							return \mb_strlen($val) >= static::$threshold;
+					}));
+				}
 
 				$cleaned[$w] = $w;
 				return true;
