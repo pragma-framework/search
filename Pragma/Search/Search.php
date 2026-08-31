@@ -39,7 +39,7 @@ class Search{
 																 $queryFilters = null
 																){
 
-		$with_context = $with_context && (!defined(PRAGMA_SEARCH_SKIP_CONTEXT) || ! PRAGMA_SEARCH_SKIP_CONTEXT);
+		$with_context = $with_context && (!defined("PRAGMA_SEARCH_SKIP_CONTEXT") || ! PRAGMA_SEARCH_SKIP_CONTEXT);
 
 		$query = trim($query);
 		if(empty($query)){
