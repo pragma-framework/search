@@ -192,7 +192,7 @@ class Search{
 				if($results_type == self::RANKED_RESULTS || $results_type == self::FULL_RESULTS){
 					$ranked = array_values($ranked);
 					usort($ranked, function($a, $b){
-						return $a['count'] < $b['count'];
+						return $a['count'] < $b['count'] ? 1 : 0;
 					});
 
 					$tmp = [];
