@@ -40,13 +40,13 @@ class Keyword extends Model{
 		}
 	}
 
-	public function store(Context $context = null, $classname, $id, $col){
+	public function store(?Context $context = null, $classname = null, $id = null, $col = null){
 		Index::build([
 			'keyword_id' 			=> $this->id,
 			'context_id'			=> ! is_null($context) ? $context->id : null,
 			'indexable_type'	=> $classname,
 			'indexable_id'		=> $id,
 			'col'							=> $col
-			])->save();
+		])->save();
 	}
 }
